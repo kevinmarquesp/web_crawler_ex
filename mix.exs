@@ -27,7 +27,8 @@ defmodule WebCrawlerEx.MixProject do
   defp deps do
     [
       {:ecto, "~> 2.0"},
-      {:sqlite_ecto2, "~> 2.2"}
+      {:sqlite_ecto2, "~> 2.2"},
+      {:httpoison, "~> 1.6"},
     ]
   end
 end
