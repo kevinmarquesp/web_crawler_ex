@@ -1,16 +1,32 @@
 defmodule WebCrawlerEx do
-  def main(argv) do
-    Enum.each(argv, fn user_url ->
-      valid_urls = WebCrawlerEx.HandleHttpRequests.get_inner_links(user_url)
-      Enum.each(valid_urls, &(IO.puts(&1)))
-    end)
+  @db_file "results.sqlite3"
+
+  def main(_argv) do
+    WebCrawlerEx.HandleDatabase.touch_db_file(@db_file)
+
+    # Enum.each(argv, fn user_url ->
+    #   valid_urls = WebCrawlerEx.HandleHttpRequests.get_inner_links(user_url)
+    #   Enum.each(valid_urls, &(IO.puts(&1)))
+    # end)
+  end
+end
+
+defmodule WebCrawlerEx.HandleDatabase do
+  def touch_db_file(db_file) do
+    case File.exists?(db_file) do
+      true ->
+        IO.puts("Warning: #{db_file} already exists!")
+      false -> 
+        {:ok, _} = Exqlite.Basic.open(db_file)  #todo: handle error
+        IO.puts("#{db_file} created with success!")
+    end
   end
 end
 
 defmodule WebCrawlerEx.HandleHttpRequests do
   def get_inner_links(base_url) do
     {:ok, page_html} = fetch(base_url)  #todo: handle error
-    href_values = get_href_values(page_html)
+    href_values = get_href_values(page_html)  #todo: handle error
     filter_valid_links(href_values)
   end
 
@@ -40,7 +56,7 @@ defmodule WebCrawlerEx.HandleHttpRequests do
       {:ok, %HTTPoison.Response{body: page_html}} ->
         {:ok, page_html}
       {:error, %HTTPoison.Error{reason: reason}} ->
-        {:ok, reason}
+        {:error, reason}
     end
   end
 end
