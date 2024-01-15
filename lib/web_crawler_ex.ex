@@ -11,16 +11,23 @@ defmodule WebCrawlerEx do
 
   defp run_and_write(db_conn, user_urls_list) do
     Task.async_stream(user_urls_list, fn user_url ->
-      inner_links = WebCrawlerEx.HandleHttpRequests.get_inner_links(user_url)
-      
-      Task.async_stream(inner_links, fn inner_link ->
-        WebCrawlerEx.HandleDatabase.insert_link(db_conn, @db_table, inner_link)
-      end, max_concurrency: @max_concurrency, timeout: @timeout)
-      |> Enum.each(&(&1))
-      
-      run_and_write(db_conn, inner_links)
+      WebCrawlerEx.HandleHttpRequests.get_inner_links(user_url)
+      |> execute_for_each_inner_link(db_conn)
     end, max_concurrency: @max_concurrency, timeout: @timeout)
     |> Enum.each(&(&1))
+  end
+
+  defp execute_for_each_inner_link([], _db_conn), do:
+    IO.puts("Warning!: Cannot handle an empty list, ignoring...")
+
+  defp execute_for_each_inner_link(inner_links, db_conn) do
+    Task.async_stream(inner_links, fn inner_link ->
+      IO.inspect(inner_link)
+      WebCrawlerEx.HandleDatabase.insert_link(db_conn, @db_table, inner_link)
+    end, max_concurrency: @max_concurrency, timeout: @timeout)
+    |> Enum.each(&(&1))
+    
+    run_and_write(db_conn, inner_links)
   end
 end
 
