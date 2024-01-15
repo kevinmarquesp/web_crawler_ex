@@ -1,14 +1,20 @@
 defmodule WebCrawlerEx do
   def main(argv) do
-    url = hd(argv)
+    Enum.each(argv, fn user_url ->
+      valid_urls = WebCrawlerEx.HandleHttpRequests.get_inner_links(user_url)
+      Enum.each(valid_urls, &(IO.puts(&1)))
+    end)
+  end
+end
 
-    {:ok, page_html} = fetch(url)
+defmodule WebCrawlerEx.HandleHttpRequests do
+  def get_inner_links(base_url) do
+    {:ok, page_html} = fetch(base_url)  #todo: handle error
     href_values = get_href_values(page_html)
-    valid_urls = filter_valid_links(href_values)
-
-    Enum.each(valid_urls, &(IO.puts(&1)))
+    filter_valid_links(href_values)
   end
 
+  #pattern matching estranho que dá pra por em funções anônimas (o que é dahora)
   defp filter_valid_links(href_values) do
     Enum.filter(href_values, fn
       [href_value] -> valid_http_url?(href_value)
@@ -22,7 +28,7 @@ defmodule WebCrawlerEx do
   end
 
   defp get_href_values(page_html) do
-    {:ok, parsed_html} = Floki.parse_document(page_html)
+    {:ok, parsed_html} = Floki.parse_document(page_html)  #todo: handle error
     a_tags = Floki.find(parsed_html, "body a")
     Enum.map(a_tags, &(Floki.attribute(&1, "href")))
   end
