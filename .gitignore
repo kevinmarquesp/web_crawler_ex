@@ -25,5 +25,5 @@ web_crawler_ex-*.tar
 # Temporary files, for example, from tests.
 /tmp/
 
-
-./web_crawler_ex
+# Local database file, only useful for the fetch output
+/results.sqlite3

@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+
+user_args=""
+
+for arg in ${@}
+do
+	user_args="${user_args},'${arg}'"
+done
+
+eval "mix run -e \"WebCrawlerEx.main([${user_args##,}])\""
