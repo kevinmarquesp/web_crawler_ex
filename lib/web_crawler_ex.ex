@@ -1,6 +1,8 @@
 defmodule WebCrawlerEx do
   @db_file "results.sqlite3"
   @db_table "links_list"
+  @max_concurrency System.schedulers_online() * 2
+  @timeout :infinity
 
   def main(argv) do
     WebCrawlerEx.HandleDatabase.get_db_connection(@db_file, @db_table)
@@ -8,21 +10,17 @@ defmodule WebCrawlerEx do
   end
 
   defp run_and_write(db_conn, user_urls_list) do
-    Enum.map(user_urls_list, fn user_url ->
-      Task.async(fn ->
-        inner_links = WebCrawlerEx.HandleHttpRequests.get_inner_links(user_url)
-
-        Enum.map(inner_links, fn inner_link ->
-          Task.async(fn ->
-            WebCrawlerEx.HandleDatabase.insert_link(db_conn, @db_table, inner_link)
-          end)
-        end)
-        |> Enum.each(&Task.await/1)
-
-        run_and_write(db_conn, inner_links)
-      end)
-    end)
-    |> Enum.each(&Task.await/1)
+    Task.async_stream(user_urls_list, fn user_url ->
+      inner_links = WebCrawlerEx.HandleHttpRequests.get_inner_links(user_url)
+      
+      Task.async_stream(inner_links, fn inner_link ->
+        WebCrawlerEx.HandleDatabase.insert_link(db_conn, @db_table, inner_link)
+      end, max_concurrency: @max_concurrency, timeout: @timeout)
+      |> Enum.each(&(&1))
+      
+      run_and_write(db_conn, inner_links)
+    end, max_concurrency: @max_concurrency, timeout: @timeout)
+    |> Enum.each(&(&1))
   end
 end
 
