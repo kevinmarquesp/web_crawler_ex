@@ -26,4 +26,4 @@ web_crawler_ex-*.tar
 /tmp/
 
 
-web_crawler_ex
+./web_crawler_ex

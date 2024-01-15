@@ -29,6 +29,7 @@ defmodule WebCrawlerEx.MixProject do
       {:ecto, "~> 2.0"},
       {:sqlite_ecto2, "~> 2.2"},
       {:httpoison, "~> 1.6"},
+      {:floki, "~> 0.30"},
     ]
   end
 end
