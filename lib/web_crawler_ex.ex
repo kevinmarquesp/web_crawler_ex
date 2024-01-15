@@ -67,6 +67,7 @@ defmodule WebCrawlerEx.HandleHttpRequests do
     a_tags = Floki.find(parsed_html, "body a")
 
     Enum.map(a_tags, &(Floki.attribute(&1, "href")))
+    |> Enum.filter(&(&1 != []))
     |> Enum.map(&hd/1)
     |> Enum.uniq()
   end
