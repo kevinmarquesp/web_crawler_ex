@@ -1,13 +1,12 @@
 defmodule WebCrawlerEx do
-  @db_file "results.sqlite3"
+  # @db_file "results.sqlite3"
 
-  def main(_argv) do
-    WebCrawlerEx.HandleDatabase.touch_db_file(@db_file)
-
-    # Enum.each(argv, fn user_url ->
-    #   valid_urls = WebCrawlerEx.HandleHttpRequests.get_inner_links(user_url)
-    #   Enum.each(valid_urls, &(IO.puts(&1)))
-    # end)
+  def main(argv) do
+    Enum.each(argv, fn user_url ->
+      valid_urls = WebCrawlerEx.HandleHttpRequests.get_inner_links(user_url)
+                   |> Enum.uniq()
+      Enum.each(valid_urls, &(IO.puts(&1)))
+    end)
   end
 end
 
