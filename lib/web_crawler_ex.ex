@@ -3,16 +3,25 @@ defmodule WebCrawlerEx do
   @db_table "links_list"
 
   def main(argv) do
-    _db_conn = WebCrawlerEx.HandleDatabase.get_db_connection(@db_file, @db_table)
+    WebCrawlerEx.HandleDatabase.get_db_connection(@db_file, @db_table)
+    |> run_and_write(argv)
+  end
 
-    Enum.each(argv, fn user_url ->
+  defp run_and_write(db_conn, user_urls_list) do
+    Enum.each(user_urls_list, fn user_url ->
       valid_urls = WebCrawlerEx.HandleHttpRequests.get_inner_links(user_url)
-      Enum.each(valid_urls, &(IO.puts(&1)))
+
+      #note: aqui seria legal aplicar o paralelismo mágico do elixir
+      valid_urls |> Enum.each(&(WebCrawlerEx.HandleDatabase.insert_link(db_conn, @db_table, &1)))
+      run_and_write(db_conn, valid_urls)
     end)
   end
 end
 
 defmodule WebCrawlerEx.HandleDatabase do
+  def insert_link(db_conn, db_table, link), do:
+    Exqlite.Basic.exec(db_conn, "INSERT OR IGNORE INTO #{db_table} (url) VALUES ('#{link}')")
+
   def get_db_connection(db_file, db_table) do
     {:ok, conn} = Exqlite.Basic.open(db_file)  #todo: handle error
 
