@@ -8,13 +8,21 @@ defmodule WebCrawlerEx do
   end
 
   defp run_and_write(db_conn, user_urls_list) do
-    Enum.each(user_urls_list, fn user_url ->
-      valid_urls = WebCrawlerEx.HandleHttpRequests.get_inner_links(user_url)
+    Enum.map(user_urls_list, fn user_url ->
+      Task.async(fn ->
+        inner_links = WebCrawlerEx.HandleHttpRequests.get_inner_links(user_url)
 
-      #note: aqui seria legal aplicar o paralelismo mágico do elixir
-      valid_urls |> Enum.each(&(WebCrawlerEx.HandleDatabase.insert_link(db_conn, @db_table, &1)))
-      run_and_write(db_conn, valid_urls)
+        Enum.map(inner_links, fn inner_link ->
+          Task.async(fn ->
+            WebCrawlerEx.HandleDatabase.insert_link(db_conn, @db_table, inner_link)
+          end)
+        end)
+        |> Enum.each(&Task.await/1)
+
+        run_and_write(db_conn, inner_links)
+      end)
     end)
+    |> Enum.each(&Task.await/1)
   end
 end
 
