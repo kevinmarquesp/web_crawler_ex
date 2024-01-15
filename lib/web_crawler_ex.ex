@@ -1,24 +1,27 @@
 defmodule WebCrawlerEx do
   @db_file "results.sqlite3"
+  @db_table "links_list"
 
   def main(argv) do
+    _db_conn = WebCrawlerEx.HandleDatabase.get_db_connection(@db_file, @db_table)
+
     Enum.each(argv, fn user_url ->
       valid_urls = WebCrawlerEx.HandleHttpRequests.get_inner_links(user_url)
       Enum.each(valid_urls, &(IO.puts(&1)))
-      Enum.each(valid_urls, &(IO.puts(is_list &1)))
     end)
   end
 end
 
 defmodule WebCrawlerEx.HandleDatabase do
-  def touch_db_file(db_file) do
-    case File.exists?(db_file) do
-      true ->
-        IO.puts("Warning: #{db_file} already exists!")
-      false -> 
-        {:ok, _} = Exqlite.Basic.open(db_file)  #todo: handle error
-        IO.puts("#{db_file} created with success!")
-    end
+  def get_db_connection(db_file, db_table) do
+    {:ok, conn} = Exqlite.Basic.open(db_file)  #todo: handle error
+
+    Exqlite.Basic.exec(conn, "CREATE TABLE IF NOT EXISTS #{db_table} (
+      id INTEGER PRIMARY KEY,
+      url TEXT UNIQUE
+    );")
+
+    conn
   end
 end
 
