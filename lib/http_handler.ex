@@ -36,4 +36,13 @@ defmodule WebCrawlerEx.HTTPHandler do
     |> Enum.map(&Enum.at(&1, 0))
     |> Enum.map(&Enum.at(String.split(&1, "#"), 0))
   end
+
+  def get_domain(url) do
+    case URI.parse(url) do
+      %URI{scheme: scheme, host: host} when is_binary(scheme) and is_binary(host) ->
+        {:ok, "#{scheme}://#{host}"}
+      _ ->
+        {:error, :noturl}
+    end
+  end
 end
