@@ -7,4 +7,4 @@ do
 	user_args="${user_args},'${arg}'"
 done
 
-eval "mix run -e \"WebCrawlerEx.main([${user_args##,}])\""
+eval "mix run -e \"WebCrawlerEx.crawn_controller([${user_args##,}])\""
