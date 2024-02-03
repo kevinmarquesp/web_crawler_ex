@@ -16,4 +16,22 @@ defmodule WebCrawlerEx.HTTPHandler do
         end
     end
   end
+
+  def extract_local_href_urls(body) do
+    {:ok, html_tree} = Floki.parse_document(body)
+
+    Floki.find(html_tree, "body a[href]")
+    |> Floki.attribute("href")
+    |> Enum.filter(&(case &1 do
+      "/" -> false
+      "/" <> _ -> true
+      _ -> false
+    end))
+  end
+
+  def extract_urls(body) do
+    Regex.scan(~r/http(s)?:\/\/[\w\.\/\-=?#]+/, body)
+    |> Enum.map(&Enum.at(&1, 0))
+    |> Enum.map(&Enum.at(String.split(&1, "#"), 0))
+  end
 end
