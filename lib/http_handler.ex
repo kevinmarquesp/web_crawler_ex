@@ -8,8 +8,10 @@ defmodule WebCrawlerEx.HTTPHandler do
     default_headers = [{"User-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}]
 
     case HTTPoison.get(url, default_headers) do
-      {:error, %HTTPoison.Error{reason: reason}} -> {:error, reason}
-      {:ok, %HTTPoison.Response{body: body}} -> if String.valid?(body) do
+      {:error, %HTTPoison.Error{reason: reason}} ->
+        {:error, reason}
+      {:ok, %HTTPoison.Response{body: body}} ->
+        if String.valid?(body) do
           {:ok, body}
         else
           {:error, :bincontent}
