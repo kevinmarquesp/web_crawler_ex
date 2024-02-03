@@ -31,7 +31,7 @@ defmodule WebCrawlerEx.HTTPHandler do
     else
       {
         :ok,
-        Floki.find(result, "*[#{attribute}}]")
+        Floki.find(result, "*[#{attribute}]")
         |> Floki.attribute(attribute)
       }
     end
