@@ -17,16 +17,18 @@ defmodule WebCrawlerEx.HTTPHandler do
     end
   end
 
-  def extract_local_href_urls(body) do
-    {:ok, html_tree} = Floki.parse_document(body)
+  def extract_attribute(body, attribute) do
+    {status, result} = Floki.parse_document(body)
 
-    Floki.find(html_tree, "body a[href]")
-    |> Floki.attribute("href")
-    |> Enum.filter(&(case &1 do
-      "/" -> false
-      "/" <> _ -> true
-      _ -> false
-    end))
+    if status !== :ok do
+      {:error, result}
+    else
+      {
+        :ok,
+        Floki.find(result, "*[#{attribute}}]")
+        |> Floki.attribute(attribute)
+      }
+    end
   end
 
   def extract_urls(body) do
