@@ -20,4 +20,23 @@ defmodule WebCrawlerEx.HTTPHandlerTest do
   test "fetch_response/1 with binary content URL" do
     assert HTTPHandler.fetch_response(@binary_content_url) == {:error, :bincontent}
   end
+
+  test "extract_attribute/2 should select existing and non-existing attribute values" do
+    body = "<div class='test'>Hello, World!</div>"
+    assert HTTPHandler.extract_attribute(body, "class") == {:ok, ["test"]}
+    assert HTTPHandler.extract_attribute(body, "id") == {:ok, []}
+  end
+
+  test "extract_urls/1 should retrun a list with the urls found" do
+    body_with_urls = "Check out https://elixir-lang.org and http://example.com"
+    assert HTTPHandler.extract_urls(body_with_urls) == ["https://elixir-lang.org", "http://example.com"]
+
+    body_without_urls = "This is a text without any URLs."
+    assert HTTPHandler.extract_urls(body_without_urls) == []
+  end
+
+  test "get_domain/1 should return the correct domain" do
+    assert HTTPHandler.get_domain("https://elixir-lang.org/docs.html") == {:ok, "https://elixir-lang.org"}
+    assert HTTPHandler.get_domain("invalid_url") == {:error, :noturl}
+  end
 end
