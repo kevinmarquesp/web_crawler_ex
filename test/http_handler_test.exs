@@ -7,24 +7,24 @@ defmodule WebCrawlerEx.HTTPHandlerTest do
   @invalid_url "https://moc.elpmaxe"
   @binary_content_url "https://www.americanpost.news/wp-content/uploads/2022/10/The-anime-Oshi-no-Ko-announces-its-premiere-date.jpg"
 
-  test "fetch_response/1 with valid URL" do
-    {:ok, body} = HTTPHandler.fetch_response(@valid_url)
+  test "fetch_body/1 with valid URL" do
+    {:ok, body} = HTTPHandler.fetch_body(@valid_url)
 
     assert String.valid?(body) == true
   end
 
-  test "fetch_response/1 with invalid URL" do
-    assert HTTPHandler.fetch_response(@invalid_url) == {:error, :nxdomain}
+  test "fetch_body/1 with invalid URL" do
+    assert HTTPHandler.fetch_body(@invalid_url) == {:error, :nxdomain}
   end
 
-  test "fetch_response/1 with binary content URL" do
-    assert HTTPHandler.fetch_response(@binary_content_url) == {:error, :bincontent}
+  test "fetch_body/1 with binary content URL" do
+    assert HTTPHandler.fetch_body(@binary_content_url) == {:error, :bincontent}
   end
 
   test "extract_attribute/2 should select existing and non-existing attribute values" do
     body = "<div class='test'>Hello, World!</div>"
-    assert HTTPHandler.extract_attribute(body, "class") == {:ok, ["test"]}
-    assert HTTPHandler.extract_attribute(body, "id") == {:ok, []}
+    assert HTTPHandler.extract_attribute("class", body) == {:ok, ["test"]}
+    assert HTTPHandler.extract_attribute("id", body) == {:ok, []}
   end
 
   test "extract_urls/1 should retrun a list with the urls found" do

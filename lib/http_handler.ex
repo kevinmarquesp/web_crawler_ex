@@ -4,7 +4,7 @@ defmodule WebCrawlerEx.HTTPHandler do
   kinds of URLs will return an error tuple, this error could be the HTTPoioson ones
   or a :bincontent error.
   """
-  def fetch_response(url) do
+  def fetch_body(url) do
     default_headers = [{"User-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}]
 
     case HTTPoison.get(url, default_headers) do
@@ -25,7 +25,7 @@ defmodule WebCrawlerEx.HTTPHandler do
   successful, it returns a tuple {:ok, attribute_value}. If the parsing fails,
   it returns a tuple {:error, reason}.
   """
-  def extract_attribute(body, attribute) do
+  def extract_attribute(attribute, body) do
     {status, result} = Floki.parse_document(body)
 
     if status !== :ok do
@@ -49,7 +49,6 @@ defmodule WebCrawlerEx.HTTPHandler do
     |> Enum.map(&Enum.at(&1, 0))
     |> Enum.map(&Enum.at(String.split(&1, "#"), 0))
   end
-
   
   @doc """
   Extracts the domain from a given URL. This function uses the URI.parse function
