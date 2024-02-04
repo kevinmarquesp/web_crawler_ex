@@ -2,36 +2,59 @@ defmodule WebCrawlerEx do
   require Logger
   alias WebCrawlerEx.HTTPHandler
 
-  def fetch_inner_urls(url) do
-    case HTTPHandler.get_domain(url) do
+  @html_url_attributes ["href", "src"]
+
+  def fetch_inner_urls(base_url) do
+    case HTTPHandler.get_domain(base_url) do
       {:ok, domain} ->
-        case HTTPHandler.fetch_response(url) do
-          {:ok, body} ->
-            {:ok, Enum.map(["href", "src"], fn (attr) ->
-              case HTTPHandler.extract_attribute(body, attr) do
-                {:ok, urls_list} -> urls_list
-                {:error, _} -> []
-              end
-            end)
-            |> List.flatten()
-            |> Enum.filter(&(not (&1 == "" or &1 == "/" or String.at(&1, 0) == "#")))
-            |> Enum.map(fn (url) ->
-              case url do
-                "/" <> _ -> domain <> url
-                _ -> url
-              end
-            end)
-            |> Enum.concat(HTTPHandler.extract_urls(body))
-            |> Enum.uniq()}
-
-          {:error, :bincontent} ->
-            {:warning, "Binnary file detected, ignoring"}
-          {:error, reason} ->
-            {:error, "HTTP request error: #{reason}"}
-        end
-
+        fetch_body(domain, base_url)
       {:error, reason} ->
-        {:error, "You're url is not valid, ignoring: #{reason}"}
+        {:error, "The url #{base_url} is not a valid one: #{reason}"}
+    end
+  end
+
+  defp fetch_body(domain, acc_base_url) do
+    case HTTPHandler.fetch_body(acc_base_url) do
+      {:ok, body} ->
+        {:ok, extract_urls(domain, body)}
+      {:error, :bincontent} ->
+        {:warning, "Fetched a binnary file"}
+      {:error, reason} ->
+        {:error, "HTTP request error: #{reason}"}
+    end
+  end
+
+  defp extract_urls(domain, body) do
+    @html_url_attributes
+    |> Enum.map(&gracefully_extract_attributes(&1, body))
+    |> List.flatten()
+    |> Enum.filter(&valid_value?(&1))
+    |> Enum.map(&format_local_urls(&1, domain))
+    |> Enum.concat(HTTPHandler.extract_urls(body))
+    |> Enum.map(&remove_end_slash(&1))
+    |> Enum.uniq()
+  end
+
+  defp gracefully_extract_attributes(attribute, body) do
+    case HTTPHandler.extract_attribute(attribute, body) do
+      {:ok, values_list} -> values_list
+      {:error, _} -> []
+    end
+  end
+
+  defp valid_value?(""), do: false
+  defp valid_value?("/"), do: false
+  defp valid_value?(value), do: String.at(value, 0) !== "#"
+
+  defp format_local_urls("/" <> url, domain), do: domain <> "/" <> url
+  defp format_local_urls(url, _), do: url
+
+  defp remove_end_slash(url) do
+    if String.at(url, -1) === "/" do
+      len = String.length(url)
+      String.slice(url, 0, len - 1)
+    else
+      url
     end
   end
 
