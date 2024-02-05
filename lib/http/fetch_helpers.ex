@@ -1,4 +1,4 @@
-defmodule WebCrawlerEx.HTTPHandler do
+defmodule WebCrawlerEx.Http.FetchHelpers do
   @doc """
   Fetches the body response only for URLs that returns a text based content. Other
   kinds of URLs will return an error tuple, this error could be the HTTPoioson ones
