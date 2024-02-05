@@ -18,7 +18,7 @@ defmodule WebCrawlerEx.Http.ExtractInnerUrls do
       {:ok, domain} ->
         fetch_body(domain, base_url)
       {:error, reason} ->
-        {:error, "The url #{base_url} is not a valid one: #{reason}"}
+        {:error, "The url #{base_url} is not a valid one: #{inspect(reason)}"}
     end
   end
 
@@ -29,7 +29,7 @@ defmodule WebCrawlerEx.Http.ExtractInnerUrls do
       {:error, :bincontent} ->
         {:warning, "Fetched a binnary file"}
       {:error, reason} ->
-        {:error, "HTTP request error: #{reason}"}
+        {:error, "HTTP request error: #{inspect(reason)}"}
     end
   end
 
