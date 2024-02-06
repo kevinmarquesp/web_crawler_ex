@@ -26,4 +26,4 @@ web_crawler_ex-*.tar
 /tmp/
 
 # Local database file, only useful for the fetch output
-/results.sqlite3
+/.db.sqlite3
