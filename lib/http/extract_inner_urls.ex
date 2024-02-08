@@ -15,21 +15,15 @@ defmodule WebCrawlerEx.Http.ExtractInnerUrls do
   """
   def extract_inner_urls(base_url) do
     case FetchHelpers.get_domain(base_url) do
-      {:ok, domain} ->
-        fetch_body(domain, base_url)
-      {:error, reason} ->
-        {:error, "The url #{base_url} is not a valid one: #{inspect(reason)}"}
+      {:ok, domain} -> fetch_body(domain, base_url)
+      {:error, reason} -> {:error, reason}
     end
   end
 
   defp fetch_body(domain, acc_base_url) do
     case FetchHelpers.fetch_body(acc_base_url) do
-      {:ok, body} ->
-        {:ok, extract_urls(domain, body)}
-      {:error, :bincontent} ->
-        {:warning, "Fetched a binnary file"}
-      {:error, reason} ->
-        {:error, "HTTP request error: #{inspect(reason)}"}
+      {:ok, body} -> {:ok, extract_urls(domain, body)}
+      {:error, reason} -> {:error, reason}
     end
   end
 
