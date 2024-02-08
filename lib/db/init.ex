@@ -24,4 +24,23 @@ defmodule WebCrawlerEx.Db.Init do
     |> Enum.filter(&(String.length(&1) > 0))
     |> Enum.map(&(&1 <> ";"))
   end
+
+  @doc """
+  """
+  def insert(conn, table, url) do
+    query = "INSERT OR IGNORE INTO #{table} (url) VALUES (?)"
+    Exqlite.Basic.exec(conn, query, [url])
+  end
+
+  @doc """
+  """
+  def select(conn, table) do
+    query = "SELECT url FROM #{table}"
+    case Exqlite.Basic.exec(conn, query) do
+      {:ok, _, %Exqlite.Result{rows: rows}, _} ->
+        {:ok, rows}
+      {:error, %Exqlite.Error{message: reason}, _} ->
+        {:error, reason}
+    end
+  end
 end
